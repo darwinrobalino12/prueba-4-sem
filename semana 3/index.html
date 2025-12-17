@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Proyecto Semántico - Semana 3</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <h1>Desarrollo de Aplicaciones Web</h1>
+        <nav>
+            <ul>
+                <li><a href="#inicio">Inicio</a></li>
+                <li><a href="#tabla">Datos</a></li>
+                <li><a href="#contacto">Contacto</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="inicio">
+            <article>
+                <h2>Explorando la Semántica HTML5</h2>
+                <p>Aprender a programar es <strong>fundamental</strong> en la era digital. Usar etiquetas correctas es <em>esencial para el SEO</em>.</p>
+                
+                <h3>Recursos Multimedia</h3>
+                <img src="assets/img/imagen1.jpg" alt="Descripción de mi imagen de repositorio" width="400">
+                
+                <video controls width="400">
+                    <source src="assets/video/video1.mp4" type="video/mp4">
+                    Tu navegador no soporta videos.
+                </video>
+            </article>
+        </section>
+
+        <section id="listas">
+            <h2>Organización de Contenido</h2>
+            <ol>
+                <li>Primer paso: Estructura</li>
+                <li>Segundo paso: Estilo</li>
+            </ol>
+            <ul>
+                <li>HTML5</li>
+                <li>CSS3</li>
+            </ul>
+            <a href="https://github.com" target="_blank">Visitar mi GitHub Externo</a>
+        </section>
+
+        <section id="tabla">
+            <h2>Tabla de Progreso</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Módulo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Semana 1</td>
+                        <td>Completado</td>
+                    </tr>
+                    <tr>
+                        <td>Semana 2</td>
+                        <td>Completado</td>
+                    </tr>
+                    <tr>
+                        <td>Semana 3</td>
+                        <td>En proceso</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="contacto">
+            <h2>Formulario de Contacto</h2>
+            <form>
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required>
+                
+                <label for="correo">Correo:</label>
+                <input type="email" id="correo" name="correo" required>
+                
+                <button type="submit">Enviar Datos</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 - Estudiante de Desarrollo Web</p>
+    </footer>
+
+</body>
+</html>
