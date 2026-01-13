@@ -1,0 +1,95 @@
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Cambio solicitado: Fondo rosa pastel */
+    background-color: #ffe4e1; 
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Centra el formulario verticalmente */
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    padding: 30px;
+    border-radius: 15px; /* Bordes más redondeados para un look moderno */
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1); /* Sombra más suave y profunda */
+    width: 100%;
+    max-width: 450px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box; /* Asegura que el padding no afecte el ancho */
+    transition: border-color 0.3s; /* Suaviza el cambio de color de los bordes */
+}
+
+/* Mensajes de error - Requisito: Visibles junto a cada campo */
+.error-msg {
+    color: #e74c3c;
+    font-size: 12px;
+    min-height: 15px;
+    display: block;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Clases para resaltar estados - Requisito: Colores y bordes */
+.invalid {
+    border-color: #e74c3c !important; /* Rojo para error */
+    background-color: #fdf2f2; /* Fondo ligero rojo */
+}
+
+.valid {
+    border-color: #2ecc71 !important; /* Verde para éxito */
+    background-color: #f2fdf5; /* Fondo ligero verde */
+}
+
+/* Estilos de botones */
+button {
+    padding: 12px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+/* Botón Enviar: Deshabilitado hasta que todo sea válido */
+#btnEnviar {
+    background-color: #ff69b4; /* Rosa fuerte para resaltar sobre el fondo pastel */
+    color: white;
+}
+
+#btnEnviar:disabled {
+    background-color: #bdc3c7; /* Gris cuando está deshabilitado */
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Botón Reiniciar */
+#btnReiniciar {
+    background-color: #95a5a6;
+    color: white;
+    margin-left: 10px;
+}
+
+#btnReiniciar:hover {
+    background-color: #7f8c8d;
+}
