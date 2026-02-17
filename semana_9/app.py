@@ -1,43 +1,29 @@
-from flask import Flask, url_for
+from flask import Flask, render_template, url_for
 
-# Creamos la instancia de la aplicación
+# 1. Inicialización de la aplicación
 app = Flask(__name__)
 
-# 1. RUTA PRINCIPAL (Paso 2 de la tarea)
+# 2. RUTA PRINCIPAL (Página de Inicio)
+# Ahora renderiza 'index.html', el cual hereda de 'base.html'
 @app.route('/')
 def home():
-    return f"""
-    <html>
-        <head>
-            <title>Fisioterapia Píllaro</title>
-            <link rel="stylesheet" href="{url_for('static', filename='estilos.css')}">
-        </head>
-        <body>
-            <h1>Centro de Fisioterapia - Píllaro</h1>
-            <p>Bienvenido al sistema de gestión de la <b>Fis. Mayra Campaña</b>.</p>
-            <p>Ubicación: Cantón Píllaro, Provincia de Tungurahua.</p>
-        </body>
-    </html>
-    """
+    # Buscamos el archivo dentro de la carpeta /templates/
+    return render_template('index.html')
 
-# 2. RUTA DINÁMICA (Paso 3 de la tarea)
+# 3. RUTA ACERCA DE (Nueva ruta requerida)
+@app.route('/about')
+def about():
+    # Renderizamos la información del Centro de Fisioterapia
+    return render_template('about.html')
+
+# 4. RUTA DINÁMICA (Gestión de pacientes)
+# Recibe el nombre del paciente por la URL y lo envía a la plantilla
 @app.route('/cita/<paciente>')
 def agendar_cita(paciente):
-    return f"""
-    <html>
-        <head>
-            <title>Cita - {paciente}</title>
-            <link rel="stylesheet" href="{url_for('static', filename='estilos.css')}">
-        </head>
-        <body>
-            <h1>Gestión de Citas</h1>
-            <p>Bienvenida, <b>{paciente}</b>. Tu solicitud en el Centro de Fisioterapia está en proceso.</p>
-            <hr>
-            <a href="/">Volver al inicio</a>
-        </body>
-    </html>
-    """
+    # 'paciente=paciente' pasa el valor de la URL a la variable en el HTML
+    return render_template('cita.html', paciente=paciente)
 
+# 5. Ejecución del servidor
 if __name__ == '__main__':
-    # Ejecutamos el servidor en modo depuración
+    # El modo debug permite ver cambios en tiempo real sin reiniciar
     app.run(debug=True)
