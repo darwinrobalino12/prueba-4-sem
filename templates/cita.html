@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %} Cita de {{ paciente }} {% endblock %}
+
+{% block content %}
+    <h1>Gestión de Citas</h1>
+    <p>Bienvenida, <b>{{ paciente }}</b>. Tu solicitud en el Centro de Fisioterapia está en proceso.</p>
+    <hr>
+    <a href="{{ url_for('home') }}">Volver al inicio</a>
+{% endblock %}
