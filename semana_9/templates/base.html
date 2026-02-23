@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %} Fisioterapia Píllaro {% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('home') }}">Inicio</a></li>
+                <li><a href="{{ url_for('about') }}">Nosotros</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 - Fisioterapia Píllaro - Cantón Píllaro, Tungurahua</p>
+    </footer>
+</body>
+</html>
+<body>
+    

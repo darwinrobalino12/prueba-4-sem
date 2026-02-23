@@ -1,0 +1,13 @@
+/* Fondo rosa para toda la página */
+body {
+    background-color: pink;
+    font-family: Arial, sans-serif;
+}
+
+/* Estilo para el título de Fisioterapia */
+h1 {
+    text-transform: uppercase; /* Todo en mayúsculas */
+    text-align: center;        /* Centrado */
+    font-weight: bold;         /* Negrita */
+    color: #333;               /* Color de letra gris oscuro */
+}
