@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>Gestión de Pacientes - VitalFisio</h2>
+
+    <form action="/registrar" method="POST" style="margin-bottom: 20px;">
+        <input type="number" name="id" placeholder="Cédula" required>
+        <input type="text" name="nombre" placeholder="Nombre completo" required>
+        <input type="number" name="edad" placeholder="Edad">
+        <input type="text" name="telefono" placeholder="Teléfono">
+        <input type="text" name="motivo" placeholder="Motivo consulta">
+        <button type="submit">Registrar Paciente</button>
+    </form>
+
+    <table border="1" style="width:100%; border-collapse: collapse;">
+        <tr style="background-color: #333; color: white;">
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Motivo</th>
+            <th>Acciones</th>
+        </tr>
+        {% for p in lista %}
+        <tr>
+            <td>{{ p.id }}</td>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.motivo }}</td>
+            <td>
+                <a href="/eliminar/{{ p.id }}" onclick="return confirm('¿Eliminar registro?')">Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+<tr>
+    <td>{{ p.id }}</td>
+    <td>{{ p.nombre }}</td>
+    <form action="/actualizar" method="POST">
+        <input type="hidden" name="id" value="{{ p.id }}">
+        <td><input type="text" name="telefono" value="{{ p.telefono }}"></td>
+        <td><input type="text" name="motivo" value="{{ p.motivo }}"></td>
+        <td>
+            <button type="submit" style="background-color: #4CAF50; color: white;">Guardar</button>
+            <a href="/eliminar/{{ p.id }}" style="color: red; margin-left: 10px;">Eliminar</a>
+        </td>
+    </form>
+</tr>

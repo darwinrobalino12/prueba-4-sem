@@ -2,28 +2,40 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %} Fisioterapia Píllaro {% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitalfisio - {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
 </head>
 <body>
-    <header>
-        <nav>
-            <ul>
-                <li><a href="{{ url_for('home') }}">Inicio</a></li>
-                <li><a href="{{ url_for('about') }}">Nosotros</a></li>
-            </ul>
-        </nav>
-    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('home') }}">Vitalfisio</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    <a class="nav-link" href="{{ url_for('home') }}">Inicio</a>
+                    <a class="nav-link" href="{{ url_for('lista_pacientes') }}">Gestión Pacientes</a>
+                    <a class="nav-link" href="{{ url_for('about') }}">Nosotros</a>
+                </div>
+            </div>
+        </div>
+    </nav>
 
     <main>
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
-    <footer>
-        <p>&copy; 2024 - Fisioterapia Píllaro - Cantón Píllaro, Tungurahua</p>
+    <footer class="text-center py-4 border-top mt-5">
+        <div class="container">
+            <p class="mb-1"><strong>Contacto:</strong> vitalfisio@gmail.com</p>
+            <p class="text-muted mt-2">&copy; 2026 - VitalFisio - Cantón Píllaro, Tungurahua</p>
+        </div>
     </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-<body>
-    

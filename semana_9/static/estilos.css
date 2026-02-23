@@ -1,13 +1,42 @@
-/* Fondo rosa para toda la página */
+/* Fondo rosa pastel para toda la página */
 body {
-    background-color: pink;
+    background-color: #fce4ec;
     font-family: Arial, sans-serif;
 }
 
-/* Estilo para el título de Fisioterapia */
+/* Títulos principales */
 h1 {
-    text-transform: uppercase; /* Todo en mayúsculas */
-    text-align: center;        /* Centrado */
-    font-weight: bold;         /* Negrita */
-    color: #333;               /* Color de letra gris oscuro */
+    text-transform: uppercase;
+    text-align: center;
+    font-weight: bold;
+    color: #333;
+    margin-top: 20px;
+}
+
+/* Estilo para los títulos de sección */
+.seccion-titulo {
+    color: #c2185b;
+    font-weight: bold;
+    border-bottom: 3px solid #f06292;
+    padding-bottom: 5px;
+    display: inline-block;
+}
+
+/* Ajuste de Imágenes del Carrusel */
+.carousel-item img {
+    height: 450px;
+    object-fit: cover;
+}
+
+/* Estilo para la tabla de pacientes y contenedores blancos */
+.table, .contenedor-blanco {
+    background-color: white !important;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Footer siempre blanco para contraste */
+footer {
+    background-color: white !important;
 }

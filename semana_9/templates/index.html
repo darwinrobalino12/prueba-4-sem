@@ -1,7 +1,40 @@
 {% extends "base.html" %}
 
+{% block title %}Inicio{% endblock %}
+
 {% block content %}
-    <h2>Bienvenido al Centro de Fisioterapia</h2>
-    <p>Atención profesional de la Fis. Mayra Campaña en Píllaro.</p>
-    <p>Estamos listos para ayudarte con tu rehabilitación.</p>
+<div id="miCarrusel" class="carousel slide shadow" data-bs-ride="carousel">
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="https://images.pexels.com/photos/4506109/pexels-photo-4506109.jpeg?auto=compress&cs=tinysrgb&w=1200&h=450&fit=crop" class="d-block w-100" alt="Fisioterapeuta">
+            <div class="carousel-caption bg-dark bg-opacity-50 rounded">
+                <h5>Terapia Profesional</h5>
+                <p>Atención profesional de la Fis. Mayra Campaña en Píllaro.</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="https://camde.es/wp-content/uploads/2024/05/rehabilitacion-despues-de-una-lesion.jpg" class="d-block w-100" alt="Rehabilitación">
+            <div class="carousel-caption bg-dark bg-opacity-50 rounded">
+                <h5>Recuperación Integral</h5>
+                <p> Vitalfiso listos para ayudarte con tu rehabilitación.</p>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#miCarrusel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#miCarrusel" data-bs-slide="next">
+        <span class="carousel-control-next-icon"></span>
+    </button>
+</div>
+
+<div class="container my-5 text-center">
+    <div class="p-5 mb-4 bg-light rounded-3 shadow-sm">
+        <h2 class="seccion-titulo">Bienvenido a Vitalfisio</h2>
+        <p class="lead mt-3">Calidad y profesionalismo en cada sesión de terapia física.</p>
+        <hr class="my-4">
+        <p>Utiliza nuestro sistema para gestionar los datos de los pacientes y sus consultas.</p>
+        <a href="{{ url_for('lista_pacientes') }}" class="btn btn-primary btn-lg">Acceder a Gestión de Pacientes</a>
+    </div>
+</div>
 {% endblock %}
