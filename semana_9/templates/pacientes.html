@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h1 class="seccion-titulo">Gestión de Pacientes</h1>
+
+    <div class="contenedor-blanco mt-4">
+        <h3>Registrar Nuevo Paciente</h3>
+        <form action="{{ url_for('registrar') }}" method="POST" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" 
+                       name="id" 
+                       class="form-control" 
+                       placeholder="Cédula (10 dígitos)" 
+                       maxlength="10" 
+                       pattern="\d{10}" 
+                       title="Ingrese los 10 dígitos de la cédula" 
+                       required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" name="nombre" class="form-control" placeholder="Nombre completo" required>
+            </div>
+            <div class="col-md-4">
+                <input type="number" name="edad" class="form-control" placeholder="Edad">
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="telefono" class="form-control" placeholder="Teléfono">
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="motivo" class="form-control" placeholder="Motivo">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Guardar en Sistema y Archivos</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-responsive mt-4">
+        <table class="table">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Teléfono</th>
+                    <th>Motivo</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in lista %}
+                <tr>
+                    <td>{{ p.id }}</td>
+                    <td>{{ p.nombre }}</td>
+                    <form action="{{ url_for('actualizar') }}" method="POST">
+                        <input type="hidden" name="id" value="{{ p.id }}">
+                        <td><input type="text" name="telefono" value="{{ p.telefono }}" class="form-control form-control-sm"></td>
+                        <td><input type="text" name="motivo" value="{{ p.motivo }}" class="form-control form-control-sm"></td>
+                        <td>
+                            <button type="submit" class="btn btn-success btn-sm">Guardar</button>
+                            <a href="{{ url_for('eliminar', id_p=p.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar?')">Borrar</a>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

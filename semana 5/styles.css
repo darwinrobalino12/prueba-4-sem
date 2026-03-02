@@ -1,0 +1,58 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.controles {
+    margin-bottom: 20px;
+}
+
+input {
+    padding: 10px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px 15px;
+    cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin-left: 5px;
+}
+
+.btn-peligro {
+    background-color: #dc3545;
+}
+
+/* Contenedor de la Galería */
+.galeria {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Estilo de las imágenes */
+.galeria img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover; /* Para que no se deformen */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s;
+    border: 5px solid transparent; /* Borde invisible por defecto */
+}
+
+/* Clase que aplicaremos con JavaScript al hacer clic */
+.galeria img.seleccionada {
+    border-color: #007bff;
+    box-shadow: 0px 0px 15px rgba(0, 123, 255, 0.7);
+    transform: scale(1.05);
+}
