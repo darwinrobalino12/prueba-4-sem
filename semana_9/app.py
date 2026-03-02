@@ -15,7 +15,6 @@ db = SQLAlchemy(app)
 # --- MODELO DE DATOS ---
 class Paciente(db.Model):
     __tablename__ = 'pacientes'
-    # Cambiado a String(10) para soportar 10 dígitos y ceros iniciales
     id = db.Column(db.String(10), primary_key=True) 
     nombre = db.Column(db.String(100), nullable=False)
     edad = db.Column(db.Integer)
@@ -32,7 +31,7 @@ def guardar_en_archivos(id_p, nombre, motivo):
     with open(os.path.join(ruta_data, 'datos.txt'), 'a', encoding='utf-8') as f:
         f.write(f"ID: {id_p} | Paciente: {nombre} | Motivo: {motivo}\n")
 
-    # 2. JSON (CORREGIDO)
+    # 2. JSON
     archivo_json = os.path.join(ruta_data, 'datos.json')
     datos_lista = []
     
@@ -40,11 +39,8 @@ def guardar_en_archivos(id_p, nombre, motivo):
         try:
             with open(archivo_json, 'r', encoding='utf-8') as f:
                 contenido = json.load(f)
-                # Forzamos a que sea una lista para evitar el error de 'dict'
                 if isinstance(contenido, list):
                     datos_lista = contenido
-                else:
-                    datos_lista = []
         except:
             datos_lista = []
     
@@ -62,7 +58,7 @@ def guardar_en_archivos(id_p, nombre, motivo):
             escritor.writerow(['ID', 'Nombre', 'Motivo'])
         escritor.writerow([id_p, nombre, motivo])
 
-# --- RUTAS ---
+# --- RUTAS ESTÁNDAR ---
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -80,7 +76,6 @@ def registrar():
     tel = request.form['telefono']
     mot = request.form['motivo']
     
-    # Verificamos si el paciente ya existe para evitar errores de Primary Key
     if Paciente.query.get(id_p):
         return "Error: La cédula ya está registrada", 400
 
@@ -100,7 +95,6 @@ def actualizar():
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
 
-# Ajustado para recibir string ya que el ID ahora es String
 @app.route('/eliminar/<string:id_p>') 
 def eliminar(id_p):
     p = Paciente.query.get(id_p)
@@ -125,14 +119,9 @@ def ver_archivos():
             datos = []
     return render_template('datos.html', datos=datos)
 
-if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True)
-    # --- RUTA DINÁMICA (Requerimiento de la Tarea) ---
+# --- RUTA DINÁMICA (Requerimiento de la Tarea) ---
 @app.route('/cita/<nombre>')
 def confirmar_cita(nombre):
-    # Devuelve un mensaje coherente con el negocio de fisioterapia
     return f'''
     <div style="text-align:center; margin-top:50px; font-family:Arial;">
         <h1 style="color: #d81b60;">VitalFisio Píllaro</h1>
@@ -142,3 +131,12 @@ def confirmar_cita(nombre):
     </div>
     '''
 
+# --- BLOQUE DE INICIO CORREGIDO PARA RENDER ---
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    
+    # Se obtiene el puerto de la variable de entorno PORT asignada por Render
+    port = int(os.environ.get('PORT', 5000))
+    # host='0.0.0.0' permite que el servicio sea accesible externamente
+    app.run(host='0.0.0.0', port=port, debug=True)
