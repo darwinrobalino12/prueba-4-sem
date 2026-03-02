@@ -129,3 +129,16 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     app.run(debug=True)
+    # --- RUTA DINÁMICA (Requerimiento de la Tarea) ---
+@app.route('/cita/<nombre>')
+def confirmar_cita(nombre):
+    # Devuelve un mensaje coherente con el negocio de fisioterapia
+    return f'''
+    <div style="text-align:center; margin-top:50px; font-family:Arial;">
+        <h1 style="color: #d81b60;">VitalFisio Píllaro</h1>
+        <p style="font-size:1.2rem;">Bienvenido/a, <strong>{nombre}</strong>.</p>
+        <p>Tu cita de rehabilitación ha sido registrada exitosamente en nuestro sistema.</p>
+        <a href="/" style="color: #1976d2;">Volver al Inicio</a>
+    </div>
+    '''
+
