@@ -184,3 +184,19 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     # En Render 'debug' debe ser False para producción, pero en local ayuda tenerlo en True
     app.run(host='0.0.0.0', port=port, debug=True)
+    # ... (Todo tu código anterior de rutas y modelos igual)
+
+# --- BLOQUE DE INICIO CORREGIDO PARA GUNICORN Y RENDER ---
+
+# Creamos las tablas AQUÍ, justo antes de que el servidor empiece a escuchar
+with app.app_context():
+    try:
+        db.create_all()
+        print("Base de datos y tablas verificadas/creadas con éxito.")
+    except Exception as e:
+        print(f"Error al crear la base de datos: {e}")
+
+if __name__ == '__main__':
+    # Esto solo se ejecuta en tu PC (Modo Local)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
