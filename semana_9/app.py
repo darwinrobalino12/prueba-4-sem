@@ -1,18 +1,34 @@
 import os
 import json
 import csv
+import sys
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
+# --- CONFIGURACIÓN DE RUTAS PARA IMPORTACIÓN ---
+# Esto fuerza a Python a mirar dentro de 'semana_9' para encontrar 'conexion'
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+try:
+    # Intento de importación robusto
+    from conexion.conexion import obtener_conexion 
+except (ImportError, ModuleNotFoundError) as e:
+    print(f"Aviso: Error al importar conexion: {e}")
+    # Intento alternativo
+    try:
+        from conexion import obtener_conexion
+    except:
+        obtener_conexion = None
+
 app = Flask(__name__)
 
-# --- CONFIGURACIÓN DE BASE DE DATOS ---
+# --- CONFIGURACIÓN DE BASE DE DATOS (SQLite) ---
 base_dir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, 'vitalfisio.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-# --- MODELO DE DATOS ---
+# --- MODELO DE DATOS (SQLite) ---
 class Paciente(db.Model):
     __tablename__ = 'pacientes'
     id = db.Column(db.String(10), primary_key=True) 
@@ -21,7 +37,7 @@ class Paciente(db.Model):
     telefono = db.Column(db.String(20))
     motivo = db.Column(db.Text)
 
-# --- FUNCIÓN DE PERSISTENCIA TRIPLE ---
+# --- FUNCIÓN DE PERSISTENCIA TRIPLE (TXT, JSON, CSV) ---
 def guardar_en_archivos(id_p, nombre, motivo):
     ruta_data = os.path.join(base_dir, 'inventario', 'data')
     if not os.path.exists(ruta_data):
@@ -34,7 +50,6 @@ def guardar_en_archivos(id_p, nombre, motivo):
     # 2. JSON
     archivo_json = os.path.join(ruta_data, 'datos.json')
     datos_lista = []
-    
     if os.path.exists(archivo_json):
         try:
             with open(archivo_json, 'r', encoding='utf-8') as f:
@@ -45,7 +60,6 @@ def guardar_en_archivos(id_p, nombre, motivo):
             datos_lista = []
     
     datos_lista.append({"id": id_p, "nombre": nombre, "motivo": motivo})
-    
     with open(archivo_json, 'w', encoding='utf-8') as f:
         json.dump(datos_lista, f, indent=4, ensure_ascii=False)
 
@@ -119,7 +133,40 @@ def ver_archivos():
             datos = []
     return render_template('datos.html', datos=datos)
 
-# --- RUTA DINÁMICA (Requerimiento de la Tarea) ---
+# --- NUEVAS RUTAS PARA GESTIÓN DE USUARIOS (MySQL / XAMPP) ---
+
+@app.route('/usuarios')
+def lista_usuarios():
+    if obtener_conexion is None:
+        return "Error: No se pudo cargar el módulo de conexión a MySQL.", 500
+        
+    conn = obtener_conexion()
+    usuarios = []
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM usuarios")
+        usuarios = cursor.fetchall()
+        conn.close()
+    return render_template('usuarios.html', usuarios=usuarios)
+
+@app.route('/registrar_usuario', methods=['POST'])
+def registrar_usuario():
+    if obtener_conexion is None:
+        return "Error: No se pudo cargar el módulo de conexión a MySQL.", 500
+
+    nom = request.form['nombre']
+    mail = request.form['email']
+    pw = request.form['password']
+    
+    conn = obtener_conexion()
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO usuarios (nombre, mail, password) VALUES (%s, %s, %s)", (nom, mail, pw))
+        conn.commit()
+        conn.close()
+    return redirect(url_for('lista_usuarios'))
+
+# --- RUTA DINÁMICA ---
 @app.route('/cita/<nombre>')
 def confirmar_cita(nombre):
     return f'''
@@ -131,12 +178,20 @@ def confirmar_cita(nombre):
     </div>
     '''
 
-# --- BLOQUE DE INICIO CORREGIDO PARA RENDER ---
+# --- BLOQUE DE INICIO ---
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     
-    # Se obtiene el puerto de la variable de entorno PORT asignada por Render
     port = int(os.environ.get('PORT', 5000))
-    # host='0.0.0.0' permite que el servicio sea accesible externamente
     app.run(host='0.0.0.0', port=port, debug=True)
+    import sys
+import os
+
+# Esto fuerza a Python a mirar en la carpeta actual para encontrar 'conexion'
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+try:
+    from conexion.conexion import obtener_conexion
+except (ImportError, ModuleNotFoundError):
+    from conexion import obtener_conexion
