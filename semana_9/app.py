@@ -5,24 +5,26 @@ import sys
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
-# 1. CONFIGURACIÓN DE RUTAS
+# 1. CONFIGURACIÓN DE RUTAS (Vital para encontrar módulos en Render)
 base_dir = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(base_dir)
+if base_dir not in sys.path:
+    sys.path.append(base_dir)
 
 # 2. IMPORTACIÓN DE CONEXIÓN MYSQL (XAMPP)
+obtener_conexion = None
 try:
+    # Intento robusto de importación para local y nube
     from conexion.conexion import obtener_conexion 
 except (ImportError, ModuleNotFoundError):
     try:
         from conexion import obtener_conexion
     except Exception as e:
-        print(f"Aviso: MySQL no disponible: {e}")
-        obtener_conexion = None
+        print(f"Aviso: MySQL solo disponible en local: {e}")
 
 app = Flask(__name__)
 
-# 3. CONFIGURACIÓN DE BASE DE DATOS (SQLite con Paso 1: Ruta Absoluta)
-# Esto soluciona el "Internal Server Error" en Render al forzar la ruta correcta
+# 3. CONFIGURACIÓN DE BASE DE DATOS (SQLite con Ruta Absoluta Forzada)
+# Esto evita que Render cree la base de datos en carpetas temporales volátiles
 db_path = os.path.join(base_dir, 'vitalfisio.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -37,11 +39,11 @@ class Paciente(db.Model):
     telefono = db.Column(db.String(20))
     motivo = db.Column(db.Text)
 
-# 5. FUNCIÓN DE PERSISTENCIA TRIPLE (TXT, JSON, CSV)
+# 5. FUNCIÓN DE PERSISTENCIA TRIPLE (Mantenida intacta para escalar)
 def guardar_en_archivos(id_p, nombre, motivo):
     ruta_data = os.path.join(base_dir, 'inventario', 'data')
     if not os.path.exists(ruta_data):
-        os.makedirs(ruta_data)
+        os.makedirs(ruta_data, exist_ok=True)
 
     # TXT
     with open(os.path.join(ruta_data, 'datos.txt'), 'a', encoding='utf-8') as f:
@@ -69,7 +71,7 @@ def guardar_en_archivos(id_p, nombre, motivo):
         if es_nuevo: escritor.writerow(['ID', 'Nombre', 'Motivo'])
         escritor.writerow([id_p, nombre, motivo])
 
-# --- RUTAS DE NAVEGACIÓN (Recuperadas para evitar BuildError) ---
+# --- RUTAS DE NAVEGACIÓN (Corregidas para evitar BuildError) ---
 
 @app.route('/')
 def home():
@@ -81,10 +83,14 @@ def about():
 
 @app.route('/pacientes')
 def lista_pacientes():
-    todos = Paciente.query.all()
-    return render_template('pacientes.html', lista=todos)
+    # Agregamos un try-except aquí para que la web no muera si hay error de DB
+    try:
+        todos = Paciente.query.all()
+        return render_template('pacientes.html', lista=todos)
+    except Exception as e:
+        print(f"Error cargando pacientes: {e}")
+        return render_template('pacientes.html', lista=[])
 
-# RUTA QUE FALTABA Y CAUSABA EL ERROR DE TU IMAGEN
 @app.route('/ver_archivos')
 def ver_archivos():
     ruta_json = os.path.join(base_dir, 'inventario', 'data', 'datos.json')
@@ -100,8 +106,15 @@ def ver_archivos():
 
 @app.route('/registrar', methods=['POST'])
 def registrar():
-    id_p, nom, eda, tel, mot = request.form['id'], request.form['nombre'], request.form['edad'], request.form['telefono'], request.form['motivo']
-    if Paciente.query.get(id_p): return "Error: La cédula ya está registrada", 400
+    id_p = request.form.get('id')
+    nom = request.form.get('nombre')
+    eda = request.form.get('edad')
+    tel = request.form.get('telefono')
+    mot = request.form.get('motivo')
+    
+    if Paciente.query.get(id_p):
+        return "Error: La cédula ya está registrada", 400
+        
     nuevo = Paciente(id=id_p, nombre=nom, edad=eda, telefono=tel, motivo=mot)
     db.session.add(nuevo)
     db.session.commit()
@@ -110,9 +123,10 @@ def registrar():
 
 @app.route('/actualizar', methods=['POST'])
 def actualizar():
-    paciente = Paciente.query.get(request.form['id'])
+    paciente = Paciente.query.get(request.form.get('id'))
     if paciente:
-        paciente.telefono, paciente.motivo = request.form['telefono'], request.form['motivo']
+        paciente.telefono = request.form.get('telefono')
+        paciente.motivo = request.form.get('motivo')
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
 
@@ -124,11 +138,13 @@ def eliminar(id_p):
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
 
-# --- GESTIÓN DE USUARIOS (MySQL - XAMPP) ---
+# --- GESTIÓN DE USUARIOS (MySQL - Local) ---
 
 @app.route('/usuarios')
 def lista_usuarios():
-    if obtener_conexion is None: return "Error: Conexión MySQL no disponible.", 500
+    if obtener_conexion is None:
+        return "Módulo MySQL no disponible en este servidor (Render). Use la versión local para esta función.", 503
+    
     conn = obtener_conexion()
     usuarios = []
     if conn:
@@ -140,8 +156,13 @@ def lista_usuarios():
 
 @app.route('/registrar_usuario', methods=['POST'])
 def registrar_usuario():
-    if obtener_conexion is None: return "Error: Conexión MySQL no disponible.", 500
-    nom, mail, pw = request.form['nombre'], request.form['email'], request.form['password']
+    if obtener_conexion is None:
+        return "Error: MySQL no disponible.", 500
+    
+    nom = request.form.get('nombre')
+    mail = request.form.get('email')
+    pw = request.form.get('password')
+    
     conn = obtener_conexion()
     if conn:
         cursor = conn.cursor()
@@ -150,14 +171,16 @@ def registrar_usuario():
         conn.close()
     return redirect(url_for('lista_usuarios'))
 
-# RUTA DINÁMICA DE CITA
 @app.route('/cita/<nombre>')
 def confirmar_cita(nombre):
     return f'<div style="text-align:center; margin-top:50px; font-family:Arial;"><h1 style="color: #d81b60;">VitalFisio Píllaro</h1><p>Cita para <b>{nombre}</b> confirmada.</p><a href="/">Volver</a></div>'
 
-# --- BLOQUE DE INICIO ---
+# --- BLOQUE DE INICIO OPTIMIZADO ---
 if __name__ == '__main__':
     with app.app_context():
+        # Esto asegura que las tablas existan siempre antes de que el servidor responda
         db.create_all() 
+        
     port = int(os.environ.get('PORT', 5000))
+    # En Render 'debug' debe ser False para producción, pero en local ayuda tenerlo en True
     app.run(host='0.0.0.0', port=port, debug=True)
