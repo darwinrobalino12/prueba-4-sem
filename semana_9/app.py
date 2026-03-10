@@ -5,7 +5,7 @@ import sys
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 
-# 1. CONFIGURACIÓN DE RUTAS (Fuerza a Python a encontrar 'conexion')
+# 1. CONFIGURACIÓN DE RUTAS
 base_dir = os.path.abspath(os.path.dirname(__file__))
 sys.path.append(base_dir)
 
@@ -21,10 +21,10 @@ except (ImportError, ModuleNotFoundError):
 
 app = Flask(__name__)
 
-# 3. CONFIGURACIÓN DE BASE DE DATOS (SQLite)
-# Importante: En Render, los archivos fuera de carpetas especiales se borran. 
-# Por ahora aseguramos que se cree en la ruta base.
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(base_dir, 'vitalfisio.db')
+# 3. CONFIGURACIÓN DE BASE DE DATOS (SQLite con Paso 1: Ruta Absoluta)
+# Esto soluciona el "Internal Server Error" en Render al forzar la ruta correcta
+db_path = os.path.join(base_dir, 'vitalfisio.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -43,11 +43,11 @@ def guardar_en_archivos(id_p, nombre, motivo):
     if not os.path.exists(ruta_data):
         os.makedirs(ruta_data)
 
-    # 1. TXT
+    # TXT
     with open(os.path.join(ruta_data, 'datos.txt'), 'a', encoding='utf-8') as f:
         f.write(f"ID: {id_p} | Paciente: {nombre} | Motivo: {motivo}\n")
 
-    # 2. JSON
+    # JSON
     archivo_json = os.path.join(ruta_data, 'datos.json')
     datos_lista = []
     if os.path.exists(archivo_json):
@@ -61,7 +61,7 @@ def guardar_en_archivos(id_p, nombre, motivo):
     with open(archivo_json, 'w', encoding='utf-8') as f:
         json.dump(datos_lista, f, indent=4, ensure_ascii=False)
 
-    # 3. CSV
+    # CSV
     archivo_csv = os.path.join(ruta_data, 'datos.csv')
     es_nuevo = not os.path.exists(archivo_csv)
     with open(archivo_csv, 'a', newline='', encoding='utf-8') as f:
@@ -69,7 +69,8 @@ def guardar_en_archivos(id_p, nombre, motivo):
         if es_nuevo: escritor.writerow(['ID', 'Nombre', 'Motivo'])
         escritor.writerow([id_p, nombre, motivo])
 
-# --- RUTAS ESTÁNDAR ---
+# --- RUTAS DE NAVEGACIÓN (Recuperadas para evitar BuildError) ---
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -82,6 +83,20 @@ def about():
 def lista_pacientes():
     todos = Paciente.query.all()
     return render_template('pacientes.html', lista=todos)
+
+# RUTA QUE FALTABA Y CAUSABA EL ERROR DE TU IMAGEN
+@app.route('/ver_archivos')
+def ver_archivos():
+    ruta_json = os.path.join(base_dir, 'inventario', 'data', 'datos.json')
+    datos = []
+    if os.path.exists(ruta_json):
+        try:
+            with open(ruta_json, 'r', encoding='utf-8') as f:
+                datos = json.load(f)
+        except: pass
+    return render_template('datos.html', datos=datos)
+
+# --- OPERACIONES PACIENTES (SQLite) ---
 
 @app.route('/registrar', methods=['POST'])
 def registrar():
@@ -109,20 +124,11 @@ def eliminar(id_p):
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
 
-@app.route('/ver_archivos')
-def ver_archivos():
-    ruta_json = os.path.join(base_dir, 'inventario', 'data', 'datos.json')
-    datos = []
-    if os.path.exists(ruta_json):
-        try:
-            with open(ruta_json, 'r', encoding='utf-8') as f: datos = json.load(f)
-        except: pass
-    return render_template('datos.html', datos=datos)
+# --- GESTIÓN DE USUARIOS (MySQL - XAMPP) ---
 
-# --- GESTIÓN DE USUARIOS (MySQL) ---
 @app.route('/usuarios')
 def lista_usuarios():
-    if obtener_conexion is None: return "Error: No se pudo cargar el módulo de conexión.", 500
+    if obtener_conexion is None: return "Error: Conexión MySQL no disponible.", 500
     conn = obtener_conexion()
     usuarios = []
     if conn:
@@ -134,7 +140,7 @@ def lista_usuarios():
 
 @app.route('/registrar_usuario', methods=['POST'])
 def registrar_usuario():
-    if obtener_conexion is None: return "Error de conexión MySQL", 500
+    if obtener_conexion is None: return "Error: Conexión MySQL no disponible.", 500
     nom, mail, pw = request.form['nombre'], request.form['email'], request.form['password']
     conn = obtener_conexion()
     if conn:
@@ -144,14 +150,14 @@ def registrar_usuario():
         conn.close()
     return redirect(url_for('lista_usuarios'))
 
-# --- RUTA DINÁMICA ---
+# RUTA DINÁMICA DE CITA
 @app.route('/cita/<nombre>')
 def confirmar_cita(nombre):
-    return f'<div style="text-align:center; margin-top:50px; font-family:Arial;"><h1 style="color: #d81b60;">VitalFisio Píllaro</h1><p>Bienvenido/a, <strong>{nombre}</strong>.</p><a href="/">Volver</a></div>'
+    return f'<div style="text-align:center; margin-top:50px; font-family:Arial;"><h1 style="color: #d81b60;">VitalFisio Píllaro</h1><p>Cita para <b>{nombre}</b> confirmada.</p><a href="/">Volver</a></div>'
 
 # --- BLOQUE DE INICIO ---
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all() # Crea la tabla si no existe al iniciar
+        db.create_all() 
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
