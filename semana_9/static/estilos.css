@@ -1,0 +1,120 @@
+/* Configuración base: Fondo Rosa Pastel Muy Suave */
+html, body {
+    background-color: #fdf2f5 !important;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #444;
+}
+
+/* Títulos con Estilo VitalFisio */
+h1, h2, h3 {
+    text-align: center;
+    font-weight: 700;
+}
+
+.seccion-titulo {
+    color: #d81b60;
+    border-bottom: 3px solid #64b5f6;
+    padding-bottom: 8px;
+    display: inline-block;
+    margin-bottom: 25px;
+}
+
+/* Contenedores Blancos */
+.contenedor-blanco, .table {
+    background-color: #ffffff !important;
+    border-radius: 15px;
+    border: 1px solid #f8bbd0;
+    box-shadow: 0px 8px 20px rgba(216, 27, 96, 0.05);
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+/* BOTONES: Azul Médico */
+.btn-primary {
+    background-color: #1976d2 !important;
+    border: none !important;
+    border-radius: 50px !important;
+    padding: 10px 25px !important;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+/* Navbar */
+.navbar {
+    background-color: #1976d2 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.navbar-brand, .nav-link {
+    color: white !important;
+}
+
+/* --- SOLUCIÓN PARA EL BOTÓN INVISIBLE --- */
+/* Esta regla fuerza al botón de login a resaltar sobre el azul */
+.navbar-nav .nav-link.text-primary {
+    color: #ffd54f !important; /* Amarillo resaltado */
+    font-weight: bold !important;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    margin-left: 10px;
+}
+
+/* Carrusel */
+.carousel-item img {
+    height: 450px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+/* Estilo para las Cédulas/Textos primarios */
+.text-primary {
+    color: #1976d2 !important;
+}
+
+footer {
+    background-color: white !important;
+    border-top: 4px solid #f06292;
+    margin-top: 60px;
+    padding: 30px 0;
+    color: #666;
+}
+/* --- NUEVOS ESTILOS PARA BOTONES DE ACCIÓN (PACIENTES) --- */
+.btn-tabla {
+    width: 85px;              /* Ancho fijo igual para todos */
+    height: 38px;             /* Altura fija */
+    display: flex;            /* Para centrar el texto dentro */
+    align-items: center;
+    justify-content: center;
+    margin: 5px auto;         /* Separa los botones y los centra en la celda */
+    border-radius: 8px !important; /* Bordes un poco más rectos y elegantes */
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.2s;
+}
+
+.btn-tabla:hover {
+    transform: scale(1.05);   /* Efecto visual al pasar el mouse */
+}
+
+/* Colores específicos para que resalten */
+.btn-guardar {
+    background-color: #2e7d32 !important; /* Verde médico */
+    border: none !important;
+    color: white !important;
+}
+
+.btn-borrar {
+    background-color: #d32f2f !important; /* Rojo alerta */
+    border: none !important;
+    color: white !important;
+}

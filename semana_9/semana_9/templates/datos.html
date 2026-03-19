@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %} Historial de Registros - Vitalfisio {% endblock %}
+
+{% block content %}
+<div class="container text-center">
+    <h1 class="seccion-titulo">Historial de Registros</h1>
+    <p class="text-muted">Listado detallado de pacientes atendidos en la clínica.</p>
+
+    <div class="contenedor-blanco mt-4 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Cédula</th>
+                        <th scope="col">Paciente</th>
+                        <th scope="col">Motivo de Consulta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for d in datos %}
+                    <tr>
+                        <td class="fw-bold text-primary">{{ d.id }}</td>
+                        <td class="text-dark">{{ d.nombre }}</td>
+                        <td class="text-muted small">{{ d.motivo }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="py-5 text-muted italic">
+                            No se han encontrado registros en el historial todavía.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 pt-3 border-top">
+            <a href="{{ url_for('lista_pacientes') }}" class="btn btn-outline-secondary btn-sm">
+                Volver a Panel de Control
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Gestión de Pacientes | VitalFisio{% endblock %}
+
+{% block content %}
+<div class="container mt-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-primary"><i class="fas fa-users me-2"></i>Gestión de Pacientes</h2>
+        <span class="badge bg-primary rounded-pill">Cantón Píllaro</span>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 mb-5">
+        <div class="card-body p-4">
+            <h5 class="card-title fw-bold mb-3"><i class="fas fa-user-plus me-2 text-success"></i>Registrar Nuevo Paciente</h5>
+            <form action="{{ url_for('registrar') }}" method="POST" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Cédula</label>
+                    <input type="text" name="id" class="form-control" placeholder="10 dígitos" maxlength="10" pattern="\d{10}" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Nombre Completo</label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Nombre y Apellido" required>
+                </div>
+                <div class="col-md-1">
+                    <label class="form-label small fw-bold">Edad</label>
+                    <input type="number" name="edad" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control" placeholder="0987654321">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Motivo</label>
+                    <input type="text" name="motivo" class="form-control" placeholder="Ej: Dolor lumbar">
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-success px-4 rounded-pill fw-bold">
+                        <i class="fas fa-save me-2"></i>Guardar en Sistema
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Cédula</th>
+                            <th>Paciente</th>
+                            <th>Teléfono (Editar)</th>
+                            <th>Motivo (Editar)</th>
+                            <th class="text-center">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in lista %}
+                        <tr>
+                            <td class="ps-4 fw-bold text-secondary">{{ p.id }}</td>
+                            <td>{{ p.nombre }}</td>
+                            <form action="{{ url_for('actualizar') }}" method="POST">
+                                <input type="hidden" name="id" value="{{ p.id }}">
+                                <td>
+                                    <input type="text" name="telefono" value="{{ p.telefono }}" class="form-control form-control-sm border-0 bg-light">
+                                </td>
+                                <td>
+                                    <input type="text" name="motivo" value="{{ p.motivo }}" class="form-control form-control-sm border-0 bg-light">
+                                </td>
+                                <td class="text-center">
+                                    <div class="btn-group">
+                                        <button type="submit" class="btn btn-outline-success btn-sm" title="Actualizar">
+                                            <i class="fas fa-sync-alt"></i>
+                                        </button>
+                                        <a href="{{ url_for('eliminar', id_p=p.id) }}" class="btn btn-outline-danger btn-sm" 
+                                           onclick="return confirm('¿Está seguro de eliminar a {{ p.nombre }}?')" title="Eliminar">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </form>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
