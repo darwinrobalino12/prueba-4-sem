@@ -2,7 +2,7 @@ import os
 import json
 import csv
 import sys
-from flask import Flask, render_template, request, redirect, url_for, flash, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -119,7 +119,6 @@ def login():
             user_data = cursor.fetchone()
             conn.close()
             if user_data:
-                # Soporta texto plano (para Darwin) y Hash
                 if user_data['password'] == password or check_password_hash(user_data['password'], password):
                     user_obj = Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
                     login_user(user_obj)
@@ -133,17 +132,23 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
-# --- NUEVA RUTA SOLICITADA POR TUS HTML ---
 @app.route('/ver_archivos')
 @login_required
 def ver_archivos():
     ruta_data = os.path.join(base_dir, 'inventario', 'data')
-    archivos = []
-    if os.path.exists(ruta_data):
-        archivos = os.listdir(ruta_data)
-    return render_template('archivos.html', archivos=archivos)
+    archivo_json = os.path.join(ruta_data, 'datos.json')
+    archivos_lista = os.listdir(ruta_data) if os.path.exists(ruta_data) else []
+    datos_json = []
+    if os.path.exists(archivo_json):
+        try:
+            with open(archivo_json, 'r', encoding='utf-8') as f:
+                datos_json = json.load(f)
+        except Exception as e:
+            print(f"Error al leer JSON: {e}")
+    return render_template('archivos.html', archivos=archivos_lista, datos_json=datos_json)
 
 # --- GESTIÓN DE PACIENTES ---
+
 @app.route('/pacientes')
 @login_required
 def lista_pacientes():
@@ -153,8 +158,11 @@ def lista_pacientes():
 @app.route('/registrar', methods=['POST'])
 @login_required
 def registrar():
-    id_p, nom, eda = request.form.get('id'), request.form.get('nombre'), request.form.get('edad')
-    tel, mot = request.form.get('telefono'), request.form.get('motivo')
+    id_p = request.form.get('id')
+    nom = request.form.get('nombre')
+    eda = request.form.get('edad')
+    tel = request.form.get('telefono')
+    mot = request.form.get('motivo')
     if not Paciente.query.get(id_p):
         nuevo = Paciente(id=id_p, nombre=nom, edad=eda, telefono=tel, motivo=mot)
         db.session.add(nuevo)
@@ -172,6 +180,7 @@ def actualizar():
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
 
+# --- CORRECCIÓN CRÍTICA AQUÍ ---
 @app.route('/eliminar/<id_p>')
 @login_required
 def eliminar(id_p):
@@ -180,6 +189,8 @@ def eliminar(id_p):
         db.session.delete(p)
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
+
+# --- GESTIÓN DE USUARIOS (MySQL) ---
 
 @app.route('/usuarios')
 @login_required
@@ -211,6 +222,7 @@ def registrar_usuario():
                 conn.close()
     return redirect(url_for('lista_usuarios'))
 
+# --- CORRECCIÓN CRÍTICA AQUÍ ---
 @app.route('/eliminar_usuario/<int:id_u>')
 @login_required
 def eliminar_usuario(id_u):
@@ -224,6 +236,7 @@ def eliminar_usuario(id_u):
             flash("Usuario eliminado de MySQL", "warning")
     return redirect(url_for('lista_usuarios'))
 
+# --- CORRECCIÓN CRÍTICA AQUÍ ---
 @app.route('/cita/<nombre>')
 def confirmar_cita(nombre):
     return f'<div style="text-align:center; margin-top:50px; font-family:Arial;"><h1 style="color: #0d6efd;">VitalFisio Píllaro</h1><p>Cita para <b>{nombre}</b> confirmada.</p><a href="/">Volver</a></div>'

@@ -1,28 +1,56 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2>Historial de Archivos / Actividad</h2>
-    <hr>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Paciente</th>
-                <th>Fecha</th>
-                <th>Descripción</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for archivo in archivos %}
-            <tr>
-                <td>{{ archivo.id }}</td>
-                <td>{{ archivo.paciente }}</td>
-                <td>{{ archivo.fecha }}</td>
-                <td>{{ archivo.detalle }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="seccion-titulo"><i class="fas fa-history me-2"></i>Historial de Actividad</h2>
+        <span class="badge bg-primary rounded-pill px-3 py-2">
+            <i class="fas fa-user-circle me-1"></i> Admin: {{ current_user.nombre }}
+        </span>
+    </div>
+
+    <div class="contenedor-blanco shadow-lg p-0 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead style="background-color: #1976d2; color: white;">
+                    <tr>
+                        <th class="ps-4 py-3">ID Paciente</th>
+                        <th class="py-3">Nombre del Paciente</th>
+                        <th class="py-3">Registrado por</th>
+                        <th class="py-3">Motivo de Consulta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for dato in datos_json %}
+                    <tr>
+                        <td class="ps-4">
+                            <span class="badge bg-secondary rounded-pill">{{ dato.id }}</span>
+                        </td>
+                        <td class="fw-bold">{{ dato.nombre }}</td>
+                        <td>
+                            <span class="text-primary">
+                                <i class="fas fa-user-check me-1"></i>{{ current_user.nombre }}
+                            </span>
+                        </td>
+                        <td class="text-muted italic">{{ dato.motivo }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-5">
+                            <i class="fas fa-folder-open d-block mb-2 fa-2x"></i>
+                            No hay registros en el historial todavía.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{{ url_for('lista_pacientes') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-2"></i>Volver a Pacientes
+        </a>
+    </div>
 </div>
 {% endblock %}

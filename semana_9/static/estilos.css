@@ -88,3 +88,33 @@ footer {
     padding: 30px 0;
     color: #666;
 }
+/* --- NUEVOS ESTILOS PARA BOTONES DE ACCIÓN (PACIENTES) --- */
+.btn-tabla {
+    width: 85px;              /* Ancho fijo igual para todos */
+    height: 38px;             /* Altura fija */
+    display: flex;            /* Para centrar el texto dentro */
+    align-items: center;
+    justify-content: center;
+    margin: 5px auto;         /* Separa los botones y los centra en la celda */
+    border-radius: 8px !important; /* Bordes un poco más rectos y elegantes */
+    font-size: 14px;
+    font-weight: 500;
+    transition: transform 0.2s;
+}
+
+.btn-tabla:hover {
+    transform: scale(1.05);   /* Efecto visual al pasar el mouse */
+}
+
+/* Colores específicos para que resalten */
+.btn-guardar {
+    background-color: #2e7d32 !important; /* Verde médico */
+    border: none !important;
+    color: white !important;
+}
+
+.btn-borrar {
+    background-color: #d32f2f !important; /* Rojo alerta */
+    border: none !important;
+    color: white !important;
+}
