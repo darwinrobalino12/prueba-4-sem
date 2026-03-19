@@ -25,7 +25,7 @@ except (ImportError, ModuleNotFoundError):
 app = Flask(__name__)
 app.secret_key = 'vitalfisio_2026_nueva' 
 
-# 3. CONFIGURACIÓN DE BASE DE DATOS
+# 3. CONFIGURACIÓN DE BASE DE DATOS (SQLite para Pacientes)
 db_path = os.path.join(base_dir, 'vitalfisio.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -61,15 +61,18 @@ def load_user(user_id):
     if obtener_conexion is None: return None
     conn = obtener_conexion()
     if conn:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM usuarios WHERE id_usuario = %s", (user_id,))
-        user_data = cursor.fetchone()
-        conn.close()
-        if user_data:
-            return Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM usuarios WHERE id_usuario = %s", (user_id,))
+            user_data = cursor.fetchone()
+            conn.close()
+            if user_data:
+                return Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
+        except:
+            return None
     return None
 
-# 6. PERSISTENCIA TRIPLE
+# 6. PERSISTENCIA TRIPLE (TXT, JSON, CSV)
 def guardar_en_archivos(id_p, nombre, motivo):
     ruta_data = os.path.join(base_dir, 'inventario', 'data')
     if not os.path.exists(ruta_data):
@@ -112,17 +115,25 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        if obtener_conexion:
-            conn = obtener_conexion()
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM usuarios WHERE mail = %s", (email,))
-            user_data = cursor.fetchone()
-            conn.close()
-            if user_data:
-                if user_data['password'] == password or check_password_hash(user_data['password'], password):
-                    user_obj = Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
-                    login_user(user_obj)
-                    return redirect(url_for('lista_pacientes'))
+        conn = obtener_conexion() if obtener_conexion else None
+        
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT * FROM usuarios WHERE mail = %s", (email,))
+                user_data = cursor.fetchone()
+                conn.close()
+                if user_data:
+                    # Soporte para texto plano y hash
+                    if user_data['password'] == password or check_password_hash(user_data['password'], password):
+                        user_obj = Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
+                        login_user(user_obj)
+                        return redirect(url_for('lista_pacientes'))
+            except Exception as e:
+                flash(f"Error en base de datos: {e}", "danger")
+        else:
+            flash("MySQL (Usuarios) no disponible. Verifique conexión.", "warning")
+            
         flash("Credenciales incorrectas", "danger")
     return render_template('login.html')
 
@@ -136,18 +147,17 @@ def logout():
 @login_required
 def ver_archivos():
     ruta_data = os.path.join(base_dir, 'inventario', 'data')
-    archivo_json = os.path.join(ruta_data, 'datos.json')
     archivos_lista = os.listdir(ruta_data) if os.path.exists(ruta_data) else []
+    archivo_json = os.path.join(ruta_data, 'datos.json')
     datos_json = []
     if os.path.exists(archivo_json):
         try:
             with open(archivo_json, 'r', encoding='utf-8') as f:
                 datos_json = json.load(f)
-        except Exception as e:
-            print(f"Error al leer JSON: {e}")
+        except: pass
     return render_template('archivos.html', archivos=archivos_lista, datos_json=datos_json)
 
-# --- GESTIÓN DE PACIENTES ---
+# --- GESTIÓN DE PACIENTES (SQLite) ---
 
 @app.route('/pacientes')
 @login_required
@@ -158,11 +168,8 @@ def lista_pacientes():
 @app.route('/registrar', methods=['POST'])
 @login_required
 def registrar():
-    id_p = request.form.get('id')
-    nom = request.form.get('nombre')
-    eda = request.form.get('edad')
-    tel = request.form.get('telefono')
-    mot = request.form.get('motivo')
+    id_p, nom = request.form.get('id'), request.form.get('nombre')
+    eda, tel, mot = request.form.get('edad'), request.form.get('telefono'), request.form.get('motivo')
     if not Paciente.query.get(id_p):
         nuevo = Paciente(id=id_p, nombre=nom, edad=eda, telefono=tel, motivo=mot)
         db.session.add(nuevo)
@@ -180,7 +187,6 @@ def actualizar():
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
 
-# --- CORRECCIÓN CRÍTICA AQUÍ ---
 @app.route('/eliminar/<id_p>')
 @login_required
 def eliminar(id_p):
@@ -195,8 +201,9 @@ def eliminar(id_p):
 @app.route('/usuarios')
 @login_required
 def lista_usuarios():
-    if obtener_conexion is None: return "MySQL no disponible.", 503
+    if not obtener_conexion: return "MySQL no disponible.", 503
     conn = obtener_conexion()
+    if not conn: return "Error de conexión MySQL.", 500
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM usuarios")
     usuarios = cursor.fetchall()
@@ -207,36 +214,30 @@ def lista_usuarios():
 @login_required
 def registrar_usuario():
     nom, mail, pw = request.form.get('nombre'), request.form.get('email'), request.form.get('password')
-    if obtener_conexion:
-        conn = obtener_conexion()
-        if conn:
-            try:
-                pw_hash = generate_password_hash(pw)
-                cursor = conn.cursor()
-                cursor.execute("INSERT INTO usuarios (nombre, mail, password) VALUES (%s, %s, %s)", (nom, mail, pw_hash))
-                conn.commit()
-                flash("Usuario registrado exitosamente en MySQL", "success")
-            except Exception as e:
-                flash(f"Error al registrar: {e}", "danger")
-            finally:
-                conn.close()
+    conn = obtener_conexion()
+    if conn:
+        try:
+            pw_hash = generate_password_hash(pw)
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO usuarios (nombre, mail, password) VALUES (%s, %s, %s)", (nom, mail, pw_hash))
+            conn.commit()
+            flash("Usuario registrado exitosamente en MySQL", "success")
+        except Exception as e: flash(f"Error: {e}", "danger")
+        finally: conn.close()
     return redirect(url_for('lista_usuarios'))
 
-# --- CORRECCIÓN CRÍTICA AQUÍ ---
 @app.route('/eliminar_usuario/<int:id_u>')
 @login_required
 def eliminar_usuario(id_u):
-    if obtener_conexion:
-        conn = obtener_conexion()
-        if conn:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (id_u,))
-            conn.commit()
-            conn.close()
-            flash("Usuario eliminado de MySQL", "warning")
+    conn = obtener_conexion()
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (id_u,))
+        conn.commit()
+        conn.close()
+        flash("Usuario eliminado", "warning")
     return redirect(url_for('lista_usuarios'))
 
-# --- CORRECCIÓN CRÍTICA AQUÍ ---
 @app.route('/cita/<nombre>')
 def confirmar_cita(nombre):
     return f'<div style="text-align:center; margin-top:50px; font-family:Arial;"><h1 style="color: #0d6efd;">VitalFisio Píllaro</h1><p>Cita para <b>{nombre}</b> confirmada.</p><a href="/">Volver</a></div>'
