@@ -4,6 +4,17 @@
 
 {% block content %}
 <div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <div class="row">
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
@@ -57,9 +68,11 @@
                                         <td>{{ u.nombre }}</td>
                                         <td>{{ u.mail }}</td>
                                         <td class="text-center">
-                                            <button class="btn btn-sm btn-outline-danger border-0">
+                                            <a href="{{ url_for('eliminar_usuario', id_u=u.id_usuario) }}" 
+                                               class="btn btn-sm btn-outline-danger border-0" 
+                                               onclick="return confirm('¿Estás seguro de eliminar a {{ u.nombre }}?')">
                                                 <i class="fas fa-trash"></i>
-                                            </button>
+                                            </a>
                                         </td>
                                     </tr>
                                     {% endfor %}

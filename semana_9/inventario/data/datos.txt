@@ -2,3 +2,4 @@ Paciente: Darwin | ID: 1803644515 | Motivo: dolor
 ID: 1803644515 | Paciente: Darwin | Motivo: dolor
 ID: 1804159000 | Paciente: Mayra | Motivo: dolor
 ID: 1804159001 | Paciente: Darwin | Motivo: dolor
+ID: 1803644519 | Paciente: juan perez | Motivo: Fractura
