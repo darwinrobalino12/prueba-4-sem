@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# 1. CONFIGURACIÓN DE RUTAS (Vital para Render)
+# 1. CONFIGURACIÓN DE RUTAS
 base_dir = os.path.abspath(os.path.dirname(__file__))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
@@ -51,7 +51,7 @@ class Paciente(db.Model):
 
 class Usuario(UserMixin):
     def __init__(self, id_usuario, nombre, email, password):
-        self.id = str(id_usuario)  
+        self.id = id_usuario  
         self.nombre = nombre
         self.email = email
         self.password = password
@@ -65,10 +65,11 @@ def load_user(user_id):
             cursor = conn.cursor(dictionary=True)
             cursor.execute("SELECT * FROM usuarios WHERE id_usuario = %s", (user_id,))
             user_data = cursor.fetchone()
+            conn.close()
             if user_data:
                 return Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
-        except: return None
-        finally: conn.close()
+        except:
+            return None
     return None
 
 # 6. PERSISTENCIA TRIPLE (TXT, JSON, CSV)
@@ -85,7 +86,8 @@ def guardar_en_archivos(id_p, nombre, motivo):
     if os.path.exists(archivo_json):
         try:
             with open(archivo_json, 'r', encoding='utf-8') as f:
-                datos_lista = json.load(f)
+                contenido = json.load(f)
+                if isinstance(contenido, list): datos_lista = contenido
         except: pass
     datos_lista.append({"id": id_p, "nombre": nombre, "motivo": motivo})
     with open(archivo_json, 'w', encoding='utf-8') as f:
@@ -111,8 +113,7 @@ def about():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Ajustado para que coincida con tu HTML 'mail' o 'email'
-        email = request.form.get('mail') or request.form.get('email')
+        email = request.form.get('email')
         password = request.form.get('password')
         conn = obtener_conexion() if obtener_conexion else None
         
@@ -121,18 +122,19 @@ def login():
                 cursor = conn.cursor(dictionary=True)
                 cursor.execute("SELECT * FROM usuarios WHERE mail = %s", (email,))
                 user_data = cursor.fetchone()
+                conn.close()
                 if user_data:
+                    # Soporte para texto plano y hash
                     if user_data['password'] == password or check_password_hash(user_data['password'], password):
                         user_obj = Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
                         login_user(user_obj)
                         return redirect(url_for('lista_pacientes'))
-                flash("Credenciales incorrectas", "danger")
             except Exception as e:
                 flash(f"Error en base de datos: {e}", "danger")
-            finally: conn.close()
         else:
             flash("MySQL (Usuarios) no disponible. Verifique conexión.", "warning")
             
+        flash("Credenciales incorrectas", "danger")
     return render_template('login.html')
 
 @app.route('/logout')
@@ -229,13 +231,11 @@ def registrar_usuario():
 def eliminar_usuario(id_u):
     conn = obtener_conexion()
     if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (id_u,))
-            conn.commit()
-            flash("Usuario eliminado", "warning")
-        except Exception as e: flash(f"Error: {e}", "danger")
-        finally: conn.close()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM usuarios WHERE id_usuario = %s", (id_u,))
+        conn.commit()
+        conn.close()
+        flash("Usuario eliminado", "warning")
     return redirect(url_for('lista_usuarios'))
 
 @app.route('/cita/<nombre>')
@@ -248,4 +248,4 @@ with app.app_context():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=True)
