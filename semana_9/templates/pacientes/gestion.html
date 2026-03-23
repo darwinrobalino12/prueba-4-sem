@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-users-cog"></i> Gestión de Pacientes</h2>
+        <a href="{{ url_for('descargar_reporte_pdf') }}" class="btn btn-danger">
+            <i class="fas fa-file-pdf"></i> Descargar Reporte PDF
+        </a>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">Registrar Nuevo Paciente</div>
+        <div class="card-body">
+            <form action="{{ url_for('crear_paciente') }}" method="POST" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Nombres</label>
+                    <input type="text" name="nombre" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Apellidos</label>
+                    <input type="text" name="apellido" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Cédula</label>
+                    <input type="text" name="cedula" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Teléfono</label>
+                    <input type="text" name="telefono" class="form-control">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Correo Electrónico</label>
+                    <input type="email" name="email" class="form-control">
+                </div>
+                <div class="col-12 text-end">
+                    <button type="submit" class="btn btn-success">Guardar Paciente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <table class="table table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Cédula</th>
+                        <th>Contacto</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pacientes %}
+                    <tr>
+                        <td><strong>{{ p.nombre }} {{ p.apellido }}</strong></td>
+                        <td>{{ p.cedula }}</td>
+                        <td>{{ p.telefono }}<br><small class="text-muted">{{ p.email }}</small></td>
+                        <td class="text-center">
+                            <a href="{{ url_for('editar_paciente', id=p.id_paciente) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ url_for('eliminar_paciente', id=p.id_paciente) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro de eliminar este paciente?')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center">No hay pacientes registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

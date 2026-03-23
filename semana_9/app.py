@@ -2,7 +2,8 @@ import os
 import json
 import csv
 import sys
-from flask import Flask, render_template, request, redirect, url_for, flash
+import io
+from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -11,6 +12,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 base_dir = os.path.abspath(os.path.dirname(__file__))
 if base_dir not in sys.path:
     sys.path.append(base_dir)
+
+# --- IMPORTACIÓN DE SERVICIO DE REPORTE ---
+try:
+    from services.reporte_service import ReporteService
+except ImportError:
+    ReporteService = None
 
 # 2. IMPORTACIÓN DE CONEXIÓN MYSQL
 obtener_conexion = None
@@ -72,7 +79,7 @@ def load_user(user_id):
             return None
     return None
 
-# 6. PERSISTENCIA TRIPLE (TXT, JSON, CSV)
+# 6. PERSISTENCIA TRIPLE
 def guardar_en_archivos(id_p, nombre, motivo):
     ruta_data = os.path.join(base_dir, 'inventario', 'data')
     if not os.path.exists(ruta_data):
@@ -124,7 +131,7 @@ def login():
                 user_data = cursor.fetchone()
                 conn.close()
                 if user_data:
-                    # Soporte para texto plano y hash
+                    # RESTAURADO: Soporte para texto plano y hash (Tu lógica original)
                     if user_data['password'] == password or check_password_hash(user_data['password'], password):
                         user_obj = Usuario(user_data['id_usuario'], user_data['nombre'], user_data['mail'], user_data['password'])
                         login_user(user_obj)
@@ -196,6 +203,28 @@ def eliminar(id_p):
         db.session.commit()
     return redirect(url_for('lista_pacientes'))
 
+# NUEVA RUTA PARA EL PDF (Basada en tu lista de pacientes)
+@app.route('/pacientes/reporte/pdf')
+@login_required
+def descargar_reporte_pdf():
+    todos = Paciente.query.all()
+    if not todos or ReporteService is None:
+        flash("No hay pacientes o el servicio de reportes no está listo.", "warning")
+        return redirect(url_for('lista_pacientes'))
+    
+    datos_reporte = []
+    for p in todos:
+        datos_reporte.append({
+            'id': p.id,
+            'nombre': p.nombre,
+            'apellido': '', # Campo vacío para mantener estructura
+            'cedula': p.id,
+            'telefono': p.telefono
+        })
+    
+    pdf_binario = ReporteService.generar_pdf_pacientes(datos_reporte)
+    return send_file(io.BytesIO(pdf_binario), download_name="Reporte_VitalFisio.pdf", mimetype='application/pdf')
+
 # --- GESTIÓN DE USUARIOS (MySQL) ---
 
 @app.route('/usuarios')
@@ -221,7 +250,7 @@ def registrar_usuario():
             cursor = conn.cursor()
             cursor.execute("INSERT INTO usuarios (nombre, mail, password) VALUES (%s, %s, %s)", (nom, mail, pw_hash))
             conn.commit()
-            flash("Usuario registrado exitosamente en MySQL", "success")
+            flash("Usuario registrado exitosamente", "success")
         except Exception as e: flash(f"Error: {e}", "danger")
         finally: conn.close()
     return redirect(url_for('lista_usuarios'))
